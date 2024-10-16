@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ModalView: View {
-    @State var newFruit: String = ""
     @Environment (\.presentationMode) var presentation
     //　保存用の処理
     var onSave: (String) -> Void = { (name: String) -> Void in }
@@ -10,21 +9,17 @@ struct ModalView: View {
 
     // @Bindingは「親ビューから受け取った状態をバインドして保持する」ためのものなため、初期値を与えることはできない。（初期値は親ビューから！）
     @Binding var modalMode: ContentView.ModalMode
-    @Binding var selectedFruit: String
+
+    @State var name: String
 
     var body: some View {
         NavigationStack {
             HStack {
                 Text("名前")
-                if modalMode == .add {
-                    TextField("", text: $newFruit)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 200)
-                } else if modalMode == .edit {
-                    TextField("", text: $selectedFruit)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 200)
-                }
+
+                TextField("", text: $name)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 200)
             }
             .offset(x: 0, y: 50)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -36,12 +31,15 @@ struct ModalView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        if modalMode == .add && !newFruit.isEmpty {
-                            onSave(newFruit)
+                        guard !name.isEmpty else { return }
+
+                        switch modalMode {
+                        case .add:
+                            onSave(name)
+                        case .edit:
+                            onUpdate(name)
                         }
-                        if modalMode == .edit && !selectedFruit.isEmpty {
-                            onUpdate(selectedFruit)
-                        }
+
                         presentation.wrappedValue.dismiss()
                     }
                 }
