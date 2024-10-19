@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State var isShowModal = false
     @State var fruits: [(name: String, isSelected: Bool)] = [
         (name: "りんご", isSelected: false),
         (name: "みかん", isSelected: true),
@@ -10,16 +9,22 @@ struct ContentView: View {
     ]
 
     // 列挙型(enum)を用いている場合は、「.~~」という記載になる。
-    enum ModalMode {
+    enum ModalMode: Identifiable {
         case add
-        case edit
+        case edit(index: Int)
+
+        var id: String {
+            switch self {
+            case .add:
+                return "add"
+            case let .edit(index: index):
+                return "\(index)"
+            }
+        }
     }
 
     // @Stateには初期値が必要。またenumを使用している場合は、型を指定しないとエラーが出る。
-    @State var modalMode: ModalMode = .add
-    @State var selectedFruit = ""
-    // オプショナル型を使用する場合、初期値はnilのため設定しなくてもOK
-    @State var selectedIndex: Int?
+    @State var modalMode: ModalMode?
 
     var body: some View {
         NavigationStack {
@@ -37,10 +42,7 @@ struct ContentView: View {
                         (Image(systemName: "info.circle"))
                             .foregroundColor(.blue)
                             .onTapGesture {
-                                selectedFruit = fruits[index].name
-                                selectedIndex = index
-                                isShowModal = true
-                                modalMode = .edit
+                                modalMode = .edit(index: index)
                             }
                     }
                     .contentShape(Rectangle())
@@ -55,23 +57,29 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("+") {
-                        isShowModal = true
                         modalMode = .add
                     }
-                    .fullScreenCover(isPresented: $isShowModal) {
-                        ModalView(
-                            onSave: {
-                                fruits.append((name: $0, isSelected: false))
-                            },
-                            onUpdate: { newName in
-                                // selectedIndexがオプショナル型であるためアンラップが必要。
-                                if let index = selectedIndex {
+                    .fullScreenCover(item: $modalMode) { modalMode in
+                        switch modalMode {
+                        case .add:
+                            ModalView(
+                                onSave: {
+                                    fruits.append((name: $0, isSelected: false))
+                                },
+                                onUpdate: { _ in },
+                                modalMode: .add,
+                                name: ""
+                            )
+                        case let .edit(index: index):
+                            ModalView(
+                                onSave: { _ in },
+                                onUpdate: { newName in
                                     fruits[index].name = newName
-                                }
-                            },
-                            modalMode: $modalMode,
-                            name: selectedFruit
-                        )
+                                },
+                                modalMode: .edit,
+                                name: fruits[index].name
+                            )
+                        }
                     }
                 }
             }
