@@ -59,17 +59,19 @@ struct ContentView: View {
                         modalMode = .add
                     }
                     .fullScreenCover(isPresented: $isShowModal) {
-                        ModalView(onSave: {
-                            fruits.append((name: $0, isSelected: false))
-                        },
-                                  onUpdate: { newName in
-                            // selectedIndexがオプショナル型であるためアンラップが必要。
-                            if let index = selectedIndex {
-                                fruits[index].name = newName
-                            }
-                        },
-                                  modalMode: $modalMode,
-                                  selectedFruit: $selectedFruit)
+                        ModalView(
+                            onSave: {
+                                fruits.append((name: $0, isSelected: false))
+                            },
+                            onUpdate: { newName in
+                                // selectedIndexがオプショナル型であるためアンラップが必要。
+                                if let index = selectedIndex {
+                                    fruits[index].name = newName
+                                }
+                            },
+                            modalMode: $modalMode,
+                            name: selectedFruit
+                        )
                     }
                 }
             }
