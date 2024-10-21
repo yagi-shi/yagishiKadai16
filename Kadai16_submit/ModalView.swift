@@ -1,6 +1,11 @@
 import SwiftUI
 
 struct ModalView: View {
+    enum ModalMode {
+        case add
+        case edit
+    }
+
     @Environment (\.presentationMode) var presentation
     //　保存用の処理
     var onSave: (String) -> Void = { (name: String) -> Void in }
@@ -8,7 +13,7 @@ struct ModalView: View {
     var onUpdate: (String) -> Void = { (name: String) -> Void in }
 
     // @Bindingは「親ビューから受け取った状態をバインドして保持する」ためのものなため、初期値を与えることはできない。（初期値は親ビューから！）
-    @Binding var modalMode: ContentView.ModalMode
+    var modalMode: ModalMode
 
     @State var name: String
 
